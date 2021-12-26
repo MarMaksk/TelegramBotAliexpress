@@ -137,7 +137,7 @@ public class Runner {
         PreparationForInsert addition = new PreparationForInsert(update.message().from().id(), update.message().text());
         String text = update.message().text();
         long userId = update.message().from().id();
-        MessageForUser message = MessageForUser.getInstance();
+        MessageForUser message = new MessageForUser(bot);
         BotState userStatus = user.getUserCurrentBotState(userId);
         if (text.equals("/start")) return MessageType.START;
         if (text.equals("/adnc")) return MessageType.addNewAcc;

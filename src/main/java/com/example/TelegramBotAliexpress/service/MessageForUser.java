@@ -12,16 +12,11 @@ import com.example.TelegramBotAliexpress.service.sql.Operation.PriceOperation;
 import java.util.List;
 
 public class MessageForUser {
-    private static TelegramBot bot;
-    private static volatile MessageForUser instance = new MessageForUser(bot);
+    private TelegramBot bot;
 
 
     public MessageForUser(TelegramBot bot) {
         this.bot = bot;
-    }
-
-    public static MessageForUser getInstance() {
-        return instance;
     }
 
 
