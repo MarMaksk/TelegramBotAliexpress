@@ -1,6 +1,8 @@
 package com.example.TelegramBotAliexpress.service.sql.Operation;
 
+import com.example.TelegramBotAliexpress.enums.BotState;
 import com.example.TelegramBotAliexpress.service.entity.Account;
+import com.example.TelegramBotAliexpress.service.entity.TelegramUser;
 import com.example.TelegramBotAliexpress.service.sql.Connecting;
 
 import java.sql.Connection;
@@ -67,6 +69,8 @@ public class InsertToSQL {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+        } finally {
+            TelegramUser.setUserCurrentBotState(account.getIdUser(), BotState.WAIT_STATUS);
         }
     }
 

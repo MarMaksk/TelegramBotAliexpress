@@ -60,9 +60,10 @@ public class PriceOperation {
             PreparedStatement stmt = con.prepareStatement(UPDATE_MONEY);
             con.setAutoCommit(false);
             try {
-                int totalAccs = priceSelectToday(userId).getSpentTotalAccs();
-                int accsForCent = priceSelectToday(userId).getSpentAccsForCent();
-                stmt.setDouble(1, priceSelectToday(userId).getSpentMoney() + money);
+                SpentAccAndMoney spentAccAndMoney = priceSelectToday(userId);
+                int totalAccs = spentAccAndMoney.getSpentTotalAccs();
+                int accsForCent = spentAccAndMoney.getSpentAccsForCent();
+                stmt.setDouble(1, spentAccAndMoney.getSpentMoney() + money);
                 stmt.setLong(2, oneAccount ? totalAccs + 1 : totalAccs + 2);
                 stmt.setLong(3, oneAccount ? accsForCent + 1 : accsForCent);
                 stmt.setLong(4, userId);
@@ -87,7 +88,7 @@ public class PriceOperation {
             stmt.setString(2, getDateToday());
             ResultSet resultSet = stmt.executeQuery();
             while (resultSet.next()) {
-                new SpentAccAndMoney(resultSet.getDouble("spent_money"),
+                spent = new SpentAccAndMoney(resultSet.getDouble("spent_money"),
                         resultSet.getInt("account_total"),
                         resultSet.getInt("accounts_cent"));
             }
@@ -109,8 +110,8 @@ public class PriceOperation {
                 while (resultSet.next()) {
                     res.append(resultSet.getString("calendar_date")).append(": ");
                     res.append(resultSet.getDouble("spent_money")).append("$\n");
-                    res.append("Аккаунтов за день: ").append(resultSet.getInt("account_total")).append("$\n");
-                    res.append("Сбивов за цент: ").append(resultSet.getInt("accounts_cent")).append("$\n");
+                    res.append("Аккаунтов за день: ").append(resultSet.getInt("account_total")).append("\n");
+                    res.append("Сбивов за цент: ").append(resultSet.getInt("accounts_cent")).append("\n");
                 }
                 System.out.println("Получены данные о сумме");
             } catch (SQLException ex) {

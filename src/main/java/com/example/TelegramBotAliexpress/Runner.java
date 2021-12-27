@@ -1,5 +1,6 @@
 package com.example.TelegramBotAliexpress;
 
+import com.example.TelegramBotAliexpress.service.entity.SpentAccAndMoney;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
@@ -79,7 +80,7 @@ public class Runner {
                                             "Логин\n" +
                                             "и т.д.");
                                     break;
-                                case getNewAcc:
+                                case getNewAcc: ;
                                     message.sendNewAcc(userId, SelectFromSQL.selectNewAccounts(userId, true), true);
                                     break;
                                 case getTwoNewAcc:
@@ -110,9 +111,7 @@ public class Runner {
                                     TelegramUser.setUserCurrentBotState(userId, BotState.DELETE_ALL_ACC);
                                     break;
                                 case GET_SPENT_TODAY:
-                                    message.simpleAnswer(userId, "Сегодня потрачено: " + PriceOperation.priceSelectToday(userId).getSpentMoney() + "$\n" +
-                                            "Аккаунтов за день: " + PriceOperation.priceSelectToday(userId).getSpentTotalAccs() + "\n" +
-                                            "Сбивов за цент: " + PriceOperation.priceSelectToday(userId).getSpentAccsForCent());
+                                    getSpentToday(userId, message);
                                     break;
                                 case GET_SPENT_ALL:
                                     message.simpleAnswer(userId, PriceOperation.priceSelectAll(userId).equals("")
@@ -133,6 +132,17 @@ public class Runner {
             );
             return UpdatesListener.CONFIRMED_UPDATES_ALL;
         });
+    }
+
+    private void getSpentToday(Long userId, MessageForUser message) {
+        SpentAccAndMoney spentAccAndMoney = PriceOperation.priceSelectToday(userId);
+        if (spentAccAndMoney != null) {
+            message.simpleAnswer(userId, "Сегодня потрачено: " + spentAccAndMoney.getSpentMoney() + "$\n" +
+                    "Аккаунтов за день: " + spentAccAndMoney.getSpentTotalAccs() + "\n" +
+                    "Сбивов за цент: " + spentAccAndMoney.getSpentAccsForCent());
+        } else {
+            message.simpleAnswer(userId, "Сегодня трат не было");
+        }
     }
 
     private MessageType messageType(Update update) {

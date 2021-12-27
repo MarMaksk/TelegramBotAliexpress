@@ -51,7 +51,7 @@ public class UpdateToSQL {
                 } else {
                     stmt.setObject(1, account.getLastUse());
                     stmt.setString(2, account.getLogin());
-                    logger.info("Обновлён аккаунт который собъет за цент");
+                    logger.info("Обновлён аккаунт который теперь имеет заказы");
                 }
                 stmt.executeUpdate();
                 con.commit();
