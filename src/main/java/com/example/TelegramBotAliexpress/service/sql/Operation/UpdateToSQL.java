@@ -16,6 +16,9 @@ public class UpdateToSQL {
     private static final String UPDATE_ACCOUNT_USE_WITH_ORDER = "UPDATE public.accounts_use_with_order\n" +
             "\tSET last_use=?\n" +
             "\tWHERE account_login=?";
+    private static final String UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE = "UPDATE public.accounts_use_with_order\n" +
+            "\tSET last_use=?, cent_use = ? \n" +
+            "\tWHERE account_login=?";//Аккаунты которые не помогут в сбиве за цент
     private static final String UPDATE_ACCOUNT_USE_WITHOUT_ORDER = "UPDATE public.accounts_use_without_order\n" +
             "\tSET last_use=?\n" +
             "\tWHERE account_login=?";
@@ -24,8 +27,8 @@ public class UpdateToSQL {
             "\tWHERE account_login=?"; //Аккаунты которые не помогут в сбиве за цент
     private static Logger logger = Logger.getLogger("UpdateToSQL");
 
-    public static void updateWithOrder(Account account) {
-        updateAcc(account, UPDATE_ACCOUNT_USE_WITH_ORDER);
+    public static void updateWithOrder(Account account, boolean cent) {
+        updateAcc(account, cent ? UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE : UPDATE_ACCOUNT_USE_WITH_ORDER);
         logger.info("Обновлён аккаунт с заказом");
     }
 
@@ -39,7 +42,8 @@ public class UpdateToSQL {
             con.setAutoCommit(false);
             PreparedStatement stmt = con.prepareStatement(updateAcc);
             try {
-                if (updateAcc.equals(UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT)) {
+                if (updateAcc.equals(UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT)
+                        || updateAcc.equals(UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE)) {
                     stmt.setObject(1, LocalDateTime.now());
                     stmt.setBoolean(2, true);
                     stmt.setString(3, account.getLogin());
