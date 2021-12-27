@@ -110,7 +110,9 @@ public class Runner {
                                     TelegramUser.setUserCurrentBotState(userId, BotState.DELETE_ALL_ACC);
                                     break;
                                 case GET_SPENT_TODAY:
-                                    message.simpleAnswer(userId, "Сегодня потрачено: " + PriceOperation.priceSelectToday(userId) + "$");
+                                    message.simpleAnswer(userId, "Сегодня потрачено: " + PriceOperation.priceSelectToday(userId).getSpentMoney() + "$\n" +
+                                            "Аккаунтов за день: " + PriceOperation.priceSelectToday(userId).getSpentTotalAccs() + "\n" +
+                                            "Сбивов за цент: " + PriceOperation.priceSelectToday(userId).getSpentAccsForCent());
                                     break;
                                 case GET_SPENT_ALL:
                                     message.simpleAnswer(userId, PriceOperation.priceSelectAll(userId).equals("")
@@ -178,7 +180,7 @@ public class Runner {
             message.simpleAnswer(userId, text + " добавлено к общей сумме за день");
             TelegramUser.setMoneySpent(userId, Double.valueOf(text.replace("$", "")));
             TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
-            PriceOperation.priceInsert(userId);
+            PriceOperation.priceInsert(userId, false);
         }
         if (userStatus == BotState.DELETE_ACCOUNT) {
             int deleteAcc = DeleteAccount.deleteAcc(text);

@@ -39,7 +39,7 @@ public class MessageForUser {
             bot.execute(new SendMessage(userId, account.get(0).getLogin()));
             simpleAnswer(userId, "0.01$ добавлено к общей сумме за день");
             TelegramUser.setMoneySpent(userId, 0.01);
-            PriceOperation.priceInsert(userId);
+            PriceOperation.priceInsert(userId, true);
         } else {
             simpleAnswer(userId, "К получению доступен лишь 1 аккаунт");
         }
