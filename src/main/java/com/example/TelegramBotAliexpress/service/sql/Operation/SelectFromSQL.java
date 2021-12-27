@@ -108,6 +108,8 @@ public class SelectFromSQL {
                 } else {
                     if (sql.equals(SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT))
                         UpdateToSQL.updateWithOrder(acc, true);
+//                    else if (sql.equals(SELECT_ACCOUNT_USE_WITHOUT_ORDER_FOR_CENT))
+//                        UpdateToSQL.updateWithoutOrderForCent(acc);
                     else
                         UpdateToSQL.updateWithoutOrder(acc, cent);
                 }

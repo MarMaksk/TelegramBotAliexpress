@@ -37,6 +37,11 @@ public class UpdateToSQL {
         logger.info("Обновлён аккаунт без заказов");
     }
 
+//    public static void updateWithoutOrderForCent(Account account) {
+//        updateAcc(account, UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT);
+//        logger.info("Обновлён аккаунт без заказов");
+//    }
+
     private static void updateAcc(Account account, String updateAcc) {
         try (Connection con = Connecting.getConnection()) {
             con.setAutoCommit(false);
