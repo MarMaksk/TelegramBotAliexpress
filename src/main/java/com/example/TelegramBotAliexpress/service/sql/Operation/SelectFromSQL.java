@@ -21,10 +21,10 @@ public class SelectFromSQL {
             "\tFROM public.accounts_use_with_order WHERE user_id = ? AND last_use < now() - '1 days' :: interval LIMIT 2";
     private static final String SELECT_ACCOUNT_USE_WITH_ORDER_FIVE = "SELECT account_login\n" +
             "\tFROM public.accounts_use_with_order WHERE user_id = ? AND last_use < now() - '1 days' :: interval LIMIT 5";
-    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO = "SELECT account_login\n" +
+    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO = "SELECT account_login, last_use\n" +
             "\tFROM public.accounts_use_without_order WHERE user_id = ?" +
             "AND last_use < now() - '1 days' :: interval LIMIT 2";
-    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE = "SELECT account_login\n" +
+    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE = "SELECT account_login, last_use\n" +
             "\tFROM public.accounts_use_without_order WHERE user_id = ?" +
             "AND last_use < now() - '1 days' :: interval LIMIT 5";
     private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_FOR_CENT = "SELECT account_login, last_use\n" +
@@ -70,7 +70,7 @@ public class SelectFromSQL {
                     UpdateToSQL.updateWithOrder(acc, false);
                 });
             }
-            if (account.isEmpty()) {
+            if (account.size() < (five ? 5 : 2)) {
                 account = selectAccWithoutOrder(userId, five ?
                                 SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE : SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO
                         , false, false);
@@ -101,6 +101,10 @@ public class SelectFromSQL {
                 accountList = selectAccWithoutOrder(userId, SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT, false, false);
             }
             for (Account acc : accountList) {
+                if (sql.equals(SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE) ||
+                        sql.equals(SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO)) {
+                    acc.setLastUse(LocalDateTime.now());
+                }
                 if (delete) {
                     DeleteFromSQL.removeAccWithoutOrder(acc.getLogin());
                     InsertToSQL.addUseAccWithOrder(acc);
