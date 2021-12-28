@@ -64,17 +64,16 @@ public class SelectFromSQL {
             stmt.setLong(1, userId);
             ResultSet resultSet = stmt.executeQuery();
             List<Account> account = new LinkedList<>();
-            if (resultSet.wasNull()) {
+            while (resultSet.next()) {
+                account.add(new Account(userId, resultSet.getString("account_login")));
+                account.forEach(acc -> {
+                    UpdateToSQL.updateWithOrder(acc, false);
+                });
+            }
+            if (account.isEmpty()) {
                 account = selectAccWithoutOrder(userId, five ?
                                 SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE : SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO
                         , false, false);
-            } else {
-                while (resultSet.next()) {
-                    account.add(new Account(userId, resultSet.getString("account_login")));
-                    account.forEach(acc -> {
-                        UpdateToSQL.updateWithOrder(acc, false);
-                    });
-                }
             }
             logger.info("Выдан аккаунт с заказом");
             return account;
