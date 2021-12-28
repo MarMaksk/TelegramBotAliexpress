@@ -6,6 +6,7 @@ public class Account {
     private long idUser;
     private String login;
     private LocalDateTime lastUse = LocalDateTime.now();
+    private boolean centUse;
 
     public Account() {
     }
@@ -14,6 +15,13 @@ public class Account {
         this.idUser = idUser;
         this.login = login;
         this.lastUse = lastUse;
+    }
+
+    public Account(long idUser, String login, LocalDateTime lastUse, boolean centUse) {
+        this.idUser = idUser;
+        this.login = login;
+        this.lastUse = lastUse;
+        this.centUse = centUse;
     }
 
     public Account(long idUser, String login) {
@@ -43,5 +51,13 @@ public class Account {
 
     public void setLastUse(LocalDateTime lastUse) {
         this.lastUse = lastUse;
+    }
+
+    public boolean isCentUse() {
+        return centUse;
+    }
+
+    public void setCentUse(boolean centUse) {
+        this.centUse = centUse;
     }
 }

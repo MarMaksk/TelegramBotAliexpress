@@ -35,15 +35,17 @@ public class SelectFromSQL {
             "\tFROM public.accounts_use_without_order WHERE user_id = ? LIMIT 1";
     private static Logger logger = Logger.getLogger("SelectFromSQL");
 
-    public static List<Account> selectNewAccounts(Long userId, boolean one) {
+    public static List<Account> selectNewAccounts(Long userId, boolean centUse) {
+        // ЕСЛИ centUse = TRUE ТО АККАУНТ ВЫДАЁТСЯ 1
+        // А ТАКЖЕ ОН СЧИТАЕТСЯ АККАУНТОМ КОТОРЫЙ СБИВАЛ ЗА ЦЕНТ
         try (Connection con = Connecting.getConnection()) {
-            PreparedStatement stmt = con.prepareStatement(one ? SELECT_ACCOUNT_NEW_ONE : SELECT_ACCOUNT_NEW_TWO);
+            PreparedStatement stmt = con.prepareStatement(centUse ? SELECT_ACCOUNT_NEW_ONE : SELECT_ACCOUNT_NEW_TWO);
             stmt.setLong(1, userId);
             ResultSet resultSet = stmt.executeQuery();
             List<Account> account = new LinkedList<>();
             while (resultSet.next()) {
                 account.add(new Account(userId, resultSet.getString("account_login"),
-                        LocalDateTime.now()));
+                        LocalDateTime.now(), centUse));
             }
             if (!account.isEmpty()) {
                 InsertToSQL.addUseAccWithoutOrder(account);

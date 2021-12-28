@@ -65,7 +65,7 @@ public class InsertToSQL {
                     stmt.setString(2, account.getLogin());
                     stmt.setObject(3, account.getLastUse());
                     if (insertAccount.equals(INSERT_ACCOUNT_USE_WITHOUT_ORDER))
-                        stmt.setBoolean(4, false);
+                        stmt.setBoolean(4, account.isCentUse());
                     stmt.addBatch();
                 }
                 stmt.executeBatch();

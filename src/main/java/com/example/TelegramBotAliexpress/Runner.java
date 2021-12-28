@@ -80,7 +80,7 @@ public class Runner {
                                             "Логин\n" +
                                             "и т.д.");
                                     break;
-                                case getNewAcc: ;
+                                case getNewAcc:
                                     message.sendNewAcc(userId, SelectFromSQL.selectNewAccounts(userId, true), true);
                                     break;
                                 case getTwoNewAcc:
