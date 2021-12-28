@@ -22,7 +22,7 @@ public class PreparationForInsert {
 
     public void addNewAcc() {
         preparation(false);
-        accountList.forEach(InsertToSQL::addNewAccounts);
+        InsertToSQL.addNewAccounts(accountList);
         accountList = new LinkedList<>();
     }
 

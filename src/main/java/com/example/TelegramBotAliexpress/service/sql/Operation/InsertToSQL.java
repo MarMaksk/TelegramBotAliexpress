@@ -8,6 +8,7 @@ import com.example.TelegramBotAliexpress.service.sql.Connecting;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class InsertToSQL {
@@ -22,14 +23,17 @@ public class InsertToSQL {
             "\tVALUES (?, ?, ?, ?);";
     private static Logger logger = Logger.getLogger("InsertToSQL");
 
-    public static void addNewAccounts(Account account) {
+    public static void addNewAccounts(List<Account> account) {
         try (Connection con = Connecting.getConnection()) {
             PreparedStatement stmt = con.prepareStatement(INSERT_ACCOUNT_NEW);
             con.setAutoCommit(false);
             try {
-                stmt.setLong(1, account.getIdUser());
-                stmt.setString(2, account.getLogin());
-                stmt.executeUpdate();
+                for (Account acc : account) {
+                    stmt.setLong(1, acc.getIdUser());
+                    stmt.setString(2, acc.getLogin());
+                    stmt.addBatch();
+                }
+                stmt.executeBatch();
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
