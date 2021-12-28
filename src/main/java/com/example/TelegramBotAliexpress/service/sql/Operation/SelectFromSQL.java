@@ -21,10 +21,10 @@ public class SelectFromSQL {
             "\tFROM public.accounts_use_with_order WHERE user_id = ? AND last_use < now() - '1 days' :: interval LIMIT 2";
     private static final String SELECT_ACCOUNT_USE_WITH_ORDER_FIVE = "SELECT account_login\n" +
             "\tFROM public.accounts_use_with_order WHERE user_id = ? AND last_use < now() - '1 days' :: interval LIMIT 5";
-    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO = "SELECT account_login, last_use\n" +
+    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO = "SELECT account_login\n" +
             "\tFROM public.accounts_use_without_order WHERE user_id = ?" +
             "AND last_use < now() - '1 days' :: interval LIMIT 2";
-    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE = "SELECT account_login, last_use\n" +
+    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE = "SELECT account_login\n" +
             "\tFROM public.accounts_use_without_order WHERE user_id = ?" +
             "AND last_use < now() - '1 days' :: interval LIMIT 5";
     private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_FOR_CENT = "SELECT account_login, last_use\n" +
@@ -63,20 +63,16 @@ public class SelectFromSQL {
                     SELECT_ACCOUNT_USE_WITH_ORDER_FIVE : SELECT_ACCOUNT_USE_WITH_ORDER_TWO);
             stmt.setLong(1, userId);
             ResultSet resultSet = stmt.executeQuery();
-            List<Account> account = new LinkedList<>();
+            List<Account> accountList = new LinkedList<>();
             while (resultSet.next()) {
-                account.add(new Account(userId, resultSet.getString("account_login")));
-                account.forEach(acc -> {
-                    UpdateToSQL.updateWithOrder(acc, false);
-                });
+                accountList.add(new Account(userId, resultSet.getString("account_login")));
             }
-            if (account.size() < (five ? 5 : 2)) {
-                account = selectAccWithoutOrder(userId, five ?
-                                SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE : SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO
-                        , false, false);
+            UpdateToSQL.updateWithOrder(accountList, false);
+            if (accountList.size() < (five ? 5 : 2)) {
+                accountList = selectAccountWithoutOrderFiveOrTwo(userId, five);
             }
             logger.info("Выдан аккаунт с заказом");
-            return account;
+            return accountList;
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
@@ -85,6 +81,25 @@ public class SelectFromSQL {
 
     public static List<Account> selectAccountForOrder(Long userId, Boolean delete, Boolean cent) {
         return selectAccWithoutOrder(userId, SELECT_ACCOUNT_USE_FOR_ORDER, delete, cent);
+    }
+
+    public static List<Account> selectAccountWithoutOrderFiveOrTwo(Long userId, boolean five) {
+        List<Account> accountList = new LinkedList<>();
+        try (Connection con = Connecting.getConnection()) {
+            PreparedStatement stmt = con.prepareStatement(five ?
+                    SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE : SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO);
+            stmt.setLong(1, userId);
+            ResultSet resultSet = stmt.executeQuery();
+            while (resultSet.next()) {
+                accountList.add(new Account(userId, resultSet.getString("account_login"),
+                        LocalDateTime.now()));
+            }
+            UpdateToSQL.updateWithoutOrder(accountList, false);
+            logger.info("Выдано " + (five ? 5 : 2) + " аккаунтов для сбива");
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return accountList;
     }
 
     private static List<Account> selectAccWithoutOrder(Long userId, String sql, Boolean delete, Boolean cent) {
@@ -101,20 +116,16 @@ public class SelectFromSQL {
                 accountList = selectAccWithoutOrder(userId, SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT, false, false);
             }
             for (Account acc : accountList) {
-                if (sql.equals(SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE) ||
-                        sql.equals(SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO)) {
-                    acc.setLastUse(LocalDateTime.now());
-                }
                 if (delete) {
                     DeleteFromSQL.removeAccWithoutOrder(acc.getLogin());
                     InsertToSQL.addUseAccWithOrder(acc);
                 } else {
                     if (sql.equals(SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT))
-                        UpdateToSQL.updateWithOrder(acc, true);
+                        UpdateToSQL.updateWithOrder(List.of(acc), true);
 //                    else if (sql.equals(SELECT_ACCOUNT_USE_WITHOUT_ORDER_FOR_CENT))
 //                        UpdateToSQL.updateWithoutOrderForCent(acc);
                     else
-                        UpdateToSQL.updateWithoutOrder(acc, cent);
+                        UpdateToSQL.updateWithoutOrder(List.of(acc), cent);
                 }
             }
             logger.info("Выдан аккаунт без заказов");

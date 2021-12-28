@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class UpdateToSQL {
@@ -27,12 +28,12 @@ public class UpdateToSQL {
             "\tWHERE account_login=?"; //Аккаунты которые не помогут в сбиве за цент
     private static Logger logger = Logger.getLogger("UpdateToSQL");
 
-    public static void updateWithOrder(Account account, boolean cent) {
+    public static void updateWithOrder(List<Account> account, boolean cent) {
         updateAcc(account, cent ? UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE : UPDATE_ACCOUNT_USE_WITH_ORDER);
         logger.info("Обновлён аккаунт с заказом");
     }
 
-    public static void updateWithoutOrder(Account account, boolean cent) {
+    public static void updateWithoutOrder(List<Account> account, boolean cent) {
         updateAcc(account, cent ? UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT : UPDATE_ACCOUNT_USE_WITHOUT_ORDER);
         logger.info("Обновлён аккаунт без заказов");
     }
@@ -42,23 +43,29 @@ public class UpdateToSQL {
 //        logger.info("Обновлён аккаунт без заказов");
 //    }
 
-    private static void updateAcc(Account account, String updateAcc) {
+    private static void updateAcc(List<Account> account, String updateAcc) {
         try (Connection con = Connecting.getConnection()) {
             con.setAutoCommit(false);
             PreparedStatement stmt = con.prepareStatement(updateAcc);
             try {
                 if (updateAcc.equals(UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT)
                         || updateAcc.equals(UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE)) {
-                    stmt.setObject(1, LocalDateTime.now());
-                    stmt.setBoolean(2, true);
-                    stmt.setString(3, account.getLogin());
+                    for (Account acc : account) {
+                        stmt.setObject(1, LocalDateTime.now());
+                        stmt.setBoolean(2, true);
+                        stmt.setString(3, acc.getLogin());
+                        stmt.addBatch();
+                    }
                     logger.info("Обновлён аккаунт который больше не собъёт за цент");
                 } else {
-                    stmt.setObject(1, account.getLastUse());
-                    stmt.setString(2, account.getLogin());
-                    logger.info("Обновлён аккаунт который теперь имеет заказы");
+                    for (Account acc : account) {
+                        stmt.setObject(1, acc.getLastUse());
+                        stmt.setString(2, acc.getLogin());
+                        stmt.addBatch();
+                    }
+                    logger.info("Обновлён аккаунт с заказами");
                 }
-                stmt.executeUpdate();
+                stmt.executeBatch();
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
