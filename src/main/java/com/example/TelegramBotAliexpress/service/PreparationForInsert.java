@@ -1,6 +1,8 @@
 package com.example.TelegramBotAliexpress.service;
 
+import com.example.TelegramBotAliexpress.enums.BotState;
 import com.example.TelegramBotAliexpress.service.entity.Account;
+import com.example.TelegramBotAliexpress.service.entity.TelegramUser;
 import com.example.TelegramBotAliexpress.service.sql.Operation.InsertToSQL;
 
 import java.time.LocalDateTime;
@@ -28,13 +30,13 @@ public class PreparationForInsert {
 
     public void addUseAccWithOrders(Boolean use) {
         preparation(use);
-        accountList.forEach(InsertToSQL::addUseAccWithOrder);
+        InsertToSQL.addUseAccWithOrder(accountList);
         accountList = new LinkedList<>();
     }
 
     public void addUseAccWithoutOrders(Boolean use) {
         preparation(use);
-        accountList.forEach(InsertToSQL::addUseAccWithoutOrder);
+        InsertToSQL.addUseAccWithoutOrder(accountList);
         accountList = new LinkedList<>();
     }
 
@@ -51,6 +53,7 @@ public class PreparationForInsert {
                     use ? dateTime : dateTime.minusWeeks(1)));
             count++;
         }
+        TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
     }
 
     public int getCount() {

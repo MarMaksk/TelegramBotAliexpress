@@ -45,27 +45,30 @@ public class InsertToSQL {
         }
     }
 
-    public static void addUseAccWithOrder(Account account) {
-        additionToTable(account, INSERT_ACCOUNT_USE_WITH_ORDER);
+    public static void addUseAccWithOrder(List<Account> accountList) {
+        additionToTable(accountList, INSERT_ACCOUNT_USE_WITH_ORDER);
         logger.info("Добавлен аккаунт с заказом");
     }
 
-    public static void addUseAccWithoutOrder(Account account) {
-        additionToTable(account, INSERT_ACCOUNT_USE_WITHOUT_ORDER);
+    public static void addUseAccWithoutOrder(List<Account> accountList) {
+        additionToTable(accountList, INSERT_ACCOUNT_USE_WITHOUT_ORDER);
         logger.info("Добавлен аккаунт без заказа");
     }
 
-    private static void additionToTable(Account account, String insertAccount) {
+    private static void additionToTable(List<Account> accountList, String insertAccount) {
         try (Connection con = Connecting.getConnection()) {
             PreparedStatement stmt = con.prepareStatement(insertAccount);
             con.setAutoCommit(false);
             try {
-                stmt.setLong(1, account.getIdUser());
-                stmt.setString(2, account.getLogin());
-                stmt.setObject(3, account.getLastUse());
-                if (insertAccount.equals(INSERT_ACCOUNT_USE_WITHOUT_ORDER))
-                    stmt.setBoolean(4, false);
-                stmt.executeUpdate();
+                for (Account account : accountList) {
+                    stmt.setLong(1, account.getIdUser());
+                    stmt.setString(2, account.getLogin());
+                    stmt.setObject(3, account.getLastUse());
+                    if (insertAccount.equals(INSERT_ACCOUNT_USE_WITHOUT_ORDER))
+                        stmt.setBoolean(4, false);
+                    stmt.addBatch();
+                }
+                stmt.executeBatch();
                 con.commit();
             } catch (SQLException ex) {
                 con.rollback();
@@ -73,8 +76,6 @@ public class InsertToSQL {
             }
         } catch (SQLException throwables) {
             throwables.printStackTrace();
-        } finally {
-            TelegramUser.setUserCurrentBotState(account.getIdUser(), BotState.WAIT_STATUS);
         }
     }
 

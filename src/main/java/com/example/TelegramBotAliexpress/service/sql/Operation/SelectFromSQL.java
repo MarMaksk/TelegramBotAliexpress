@@ -46,7 +46,7 @@ public class SelectFromSQL {
                         LocalDateTime.now()));
             }
             if (!account.isEmpty()) {
-                account.forEach(InsertToSQL::addUseAccWithoutOrder);
+                InsertToSQL.addUseAccWithoutOrder(account);
                 account.forEach(acc -> DeleteFromSQL.removeNewAccount(acc.getLogin()));
                 logger.info("Выдан новый аккаунт");
             }
@@ -118,7 +118,7 @@ public class SelectFromSQL {
             for (Account acc : accountList) {
                 if (delete) {
                     DeleteFromSQL.removeAccWithoutOrder(acc.getLogin());
-                    InsertToSQL.addUseAccWithOrder(acc);
+                    InsertToSQL.addUseAccWithOrder(List.of(acc));
                 } else {
                     if (sql.equals(SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT))
                         UpdateToSQL.updateWithOrder(List.of(acc), true);
