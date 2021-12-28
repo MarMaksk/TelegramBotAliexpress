@@ -1,23 +1,29 @@
 package com.example.TelegramBotAliexpress.service;
 
+import com.example.TelegramBotAliexpress.service.entity.Account;
 import com.example.TelegramBotAliexpress.service.sql.Operation.DeleteFromSQL;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
-public class DeleteAccount {
+public class PreparationForDeleteAccounts {
     private static Logger logger = Logger.getLogger("DeleteAccount");
     public static int deleteAcc(String login) {
         int count = 0;
         String[] accounts = login.replaceAll("\\n", " ").replaceAll("\\\\", " ").split(" ");
+        List<String> deleteList = new ArrayList<>();
         for (String account : accounts) {
             if (!account.contains("@"))
                 continue;
-            DeleteFromSQL.removeNewAccount(account);
-            DeleteFromSQL.removeAccWithOrder(account);
-            DeleteFromSQL.removeAccWithoutOrder(account);
+            deleteList.add(account);
             count++;
-            logger.info(account + " удалён из баз");
+            logger.info(account + " отправлен на удаление");
         }
+        DeleteFromSQL.removeNewAccount(deleteList);
+        DeleteFromSQL.removeAccWithOrder(deleteList);
+        DeleteFromSQL.removeAccWithoutOrder(deleteList);
         return count;
     }
 

@@ -3,6 +3,7 @@ package com.example.TelegramBotAliexpress.service.sql.Operation;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.logging.Logger;
 
 import static com.example.TelegramBotAliexpress.service.sql.Connecting.*;
@@ -22,18 +23,28 @@ public class DeleteFromSQL {
             "    WHERE user_id = ?";
     private static Logger logger = Logger.getLogger("DeleteFromSQL");
 
-    public static void removeNewAccount(String login) {
-        remove(login, getConnection(), DELETE_ACC_NEW);
+    public static void removeNewAccount(List<String> deleteList) {
+        remove(deleteList, getConnection(), DELETE_ACC_NEW);
         logger.info("Удалён новый аккаунт");
     }
 
-    public static void removeAccWithOrder(String login) {
-        remove(login, getConnection(), DELETE_ACC_WITH_ORDER);
+    public static void removeNewAccount(String login) {
+        remove(List.of(login), getConnection(), DELETE_ACC_NEW);
+        logger.info("Удалён новый аккаунт");
+    }
+
+    public static void removeAccWithOrder(List<String> deleteList) {
+        remove(deleteList, getConnection(), DELETE_ACC_WITH_ORDER);
         logger.info("Удалён аккаунт с заказом");
     }
 
+    public static void removeAccWithoutOrder(List<String> deleteList) {
+        remove(deleteList, getConnection(), DELETE_ACC_WITHOUT_ORDER);
+        logger.info("Удалён аккаунт без заказа");
+    }
+
     public static void removeAccWithoutOrder(String login) {
-        remove(login, getConnection(), DELETE_ACC_WITHOUT_ORDER);
+        remove(List.of(login), getConnection(), DELETE_ACC_WITHOUT_ORDER);
         logger.info("Удалён аккаунт без заказа");
     }
 
@@ -62,11 +73,14 @@ public class DeleteFromSQL {
         }
     }
 
-    private static void remove(String login, Connection connection, String deleteAcc) {
+    private static void remove(List<String> deleteList, Connection connection, String deleteAcc) {
         try (Connection con = connection) {
             PreparedStatement stmt = con.prepareStatement(deleteAcc);
-            stmt.setString(1, login);
-            stmt.executeUpdate();
+            for (String accountLogin : deleteList) {
+                stmt.setString(1, accountLogin);
+                stmt.addBatch();
+            }
+            stmt.executeBatch();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }

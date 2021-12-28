@@ -7,7 +7,7 @@ import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.example.TelegramBotAliexpress.enums.BotState;
 import com.example.TelegramBotAliexpress.enums.MessageType;
-import com.example.TelegramBotAliexpress.service.DeleteAccount;
+import com.example.TelegramBotAliexpress.service.PreparationForDeleteAccounts;
 import com.example.TelegramBotAliexpress.service.MessageForUser;
 import com.example.TelegramBotAliexpress.service.entity.TelegramUser;
 import com.example.TelegramBotAliexpress.service.sql.Operation.PriceOperation;
@@ -180,7 +180,7 @@ public class Runner {
         }
         if (userStatus == BotState.DELETE_ALL_ACC) {
             if (text.matches("[1-4]")) {
-                DeleteAccount.deleteAllAcc(userId, text);
+                PreparationForDeleteAccounts.deleteAllAcc(userId, text);
                 message.simpleAnswer(userId, "Аккаунты удалены успешно");
             } else
                 message.simpleAnswer(userId, "Удаление отменено");
@@ -193,7 +193,7 @@ public class Runner {
             PriceOperation.priceInsert(userId, false);
         }
         if (userStatus == BotState.DELETE_ACCOUNT) {
-            int deleteAcc = DeleteAccount.deleteAcc(text);
+            int deleteAcc = PreparationForDeleteAccounts.deleteAcc(text);
             TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
             message.simpleAnswer(userId, "Успешно удалено: " + deleteAcc + " аккаунта(ов)");
         }
