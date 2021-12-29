@@ -15,7 +15,8 @@ public class SelectAllAccsFromSQL {
             "\tFROM public.accounts_use_with_order WHERE user_id = ?";
     private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER = "SELECT account_login\n" +
             "\tFROM public.accounts_use_without_order WHERE user_id = ?";
-    private static Logger logger = Logger.getLogger("SelectAllAccsFromSQL");
+    private static final Logger logger = Logger.getLogger("SelectAllAccsFromSQL");
+
     public static String selectNewAccounts(Long userId) {
         return getAccounts(userId, SELECT_ACCOUNT_NEW);
     }
@@ -33,13 +34,13 @@ public class SelectAllAccsFromSQL {
             PreparedStatement stmt = con.prepareStatement(selectAccountNew);
             stmt.setLong(1, userId);
             ResultSet resultSet = stmt.executeQuery();
-            String res = "";
+            StringBuilder res = new StringBuilder();
             while (resultSet.next()) {
-                res += resultSet.getString("account_login");
-                res += "\n";
+                res.append(resultSet.getString("account_login"));
+                res.append("\n");
             }
             logger.info("Выданы все аккаунты");
-            return res;
+            return res.toString();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }

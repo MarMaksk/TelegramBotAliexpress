@@ -14,27 +14,27 @@ public class UpdateToSQL {
     private static final String UPDATE_ACCOUNT_NEW = "UPDATE public.accounts_new\n" +
             "\tSET user_id=?, account_login=?\n" +
             "\tWHERE account_login=?";
-    private static final String UPDATE_ACCOUNT_USE_WITH_ORDER = "UPDATE public.accounts_use_with_order\n" +
-            "\tSET last_use=?\n" +
-            "\tWHERE account_login=?";
+//    private static final String UPDATE_ACCOUNT_USE_WITH_ORDER = "UPDATE public.accounts_use_with_order\n" +
+//            "\tSET last_use=?\n" +
+//            "\tWHERE account_login=?";
     private static final String UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE = "UPDATE public.accounts_use_with_order\n" +
             "\tSET last_use=?, cent_use = ? \n" +
             "\tWHERE account_login=?";//Аккаунты которые не помогут в сбиве за цент
-    private static final String UPDATE_ACCOUNT_USE_WITHOUT_ORDER = "UPDATE public.accounts_use_without_order\n" +
-            "\tSET last_use=?\n" +
-            "\tWHERE account_login=?";
+//    private static final String UPDATE_ACCOUNT_USE_WITHOUT_ORDER = "UPDATE public.accounts_use_without_order\n" +
+//            "\tSET last_use=?\n" +
+//            "\tWHERE account_login=?";
     private static final String UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT = "UPDATE public.accounts_use_without_order\n" +
             "\tSET last_use=?, cent_use = ?\n" +
             "\tWHERE account_login=?"; //Аккаунты которые не помогут в сбиве за цент
     private static Logger logger = Logger.getLogger("UpdateToSQL");
 
-    public static void updateWithOrder(List<Account> account, boolean cent) {
-        updateAcc(account, cent ? UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE : UPDATE_ACCOUNT_USE_WITH_ORDER);
+    public static void updateWithOrder(List<Account> account) {
+        updateAcc(account, UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE);
         logger.info("Обновлён аккаунт с заказом");
     }
 
-    public static void updateWithoutOrder(List<Account> account, boolean cent) {
-        updateAcc(account, cent ? UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT : UPDATE_ACCOUNT_USE_WITHOUT_ORDER);
+    public static void updateWithoutOrder(List<Account> account) {
+        updateAcc(account, UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT);
         logger.info("Обновлён аккаунт без заказов");
     }
 
@@ -48,23 +48,23 @@ public class UpdateToSQL {
             con.setAutoCommit(false);
             PreparedStatement stmt = con.prepareStatement(updateAcc);
             try {
-                if (updateAcc.equals(UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT)
-                        || updateAcc.equals(UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE)) {
+//                if (updateAcc.equals(UPDATE_ACCOUNT_USE_WITHOUT_ORDER_WITHOUT_CENT)
+//                        || updateAcc.equals(UPDATE_ACCOUNT_USE_WITH_ORDER_CENT_USE)) {
                     for (Account acc : account) {
                         stmt.setObject(1, LocalDateTime.now());
-                        stmt.setBoolean(2, true);
+                        stmt.setBoolean(2, acc.isCentUse());
                         stmt.setString(3, acc.getLogin());
                         stmt.addBatch();
                     }
                     logger.info("Обновлён аккаунт который больше не собъёт за цент");
-                } else {
-                    for (Account acc : account) {
-                        stmt.setObject(1, acc.getLastUse());
-                        stmt.setString(2, acc.getLogin());
-                        stmt.addBatch();
-                    }
-                    logger.info("Обновлён аккаунт с заказами");
-                }
+//                } else {
+//                    for (Account acc : account) {
+//                        stmt.setObject(1, acc.getLastUse());
+//                        stmt.setString(2, acc.getLogin());
+//                        stmt.addBatch();
+//                    }
+//                    logger.info("Обновлён аккаунт с заказами");
+//                }
                 stmt.executeBatch();
                 con.commit();
             } catch (SQLException ex) {

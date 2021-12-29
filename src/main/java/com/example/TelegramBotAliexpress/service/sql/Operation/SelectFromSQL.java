@@ -17,21 +17,21 @@ public class SelectFromSQL {
             "\tFROM public.accounts_new WHERE user_id = ? LIMIT 1";
     private static final String SELECT_ACCOUNT_NEW_TWO = "SELECT account_login\n" +
             "\tFROM public.accounts_new WHERE user_id = ? LIMIT 2";
-    private static final String SELECT_ACCOUNT_USE_WITH_ORDER_TWO = "SELECT account_login\n" +
+    private static final String SELECT_ACCOUNT_USE_WITH_ORDER_TWO = "SELECT account_login, cent_use\n" +
             "\tFROM public.accounts_use_with_order WHERE user_id = ? AND last_use < now() - '1 days' :: interval LIMIT 2";
-    private static final String SELECT_ACCOUNT_USE_WITH_ORDER_FIVE = "SELECT account_login\n" +
+    private static final String SELECT_ACCOUNT_USE_WITH_ORDER_FIVE = "SELECT account_login, cent_use\n" +
             "\tFROM public.accounts_use_with_order WHERE user_id = ? AND last_use < now() - '1 days' :: interval LIMIT 5";
-    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO = "SELECT account_login\n" +
+    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_TWO = "SELECT account_login, cent_use\n" +
             "\tFROM public.accounts_use_without_order WHERE user_id = ?" +
             "AND last_use < now() - '1 days' :: interval LIMIT 2";
-    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE = "SELECT account_login\n" +
+    private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_FIVE = "SELECT account_login, cent_use\n" +
             "\tFROM public.accounts_use_without_order WHERE user_id = ?" +
             "AND last_use < now() - '1 days' :: interval LIMIT 5";
     private static final String SELECT_ACCOUNT_USE_WITHOUT_ORDER_FOR_CENT = "SELECT account_login, last_use\n" +
             "\tFROM public.accounts_use_without_order WHERE user_id = ? AND cent_use = false AND last_use < now() - '1 days' :: interval LIMIT 1";
     private static final String SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT = "SELECT account_login, last_use\n" +
             "\tFROM public.accounts_use_with_order WHERE user_id = ? AND cent_use = false AND last_use < now() - '1 days' :: interval LIMIT 1";
-    private static final String SELECT_ACCOUNT_USE_FOR_ORDER = "SELECT account_login, last_use\n" +
+    private static final String SELECT_ACCOUNT_USE_FOR_ORDER = "SELECT account_login, last_use, cent_use\n" +
             "\tFROM public.accounts_use_without_order WHERE user_id = ? LIMIT 1";
     private static Logger logger = Logger.getLogger("SelectFromSQL");
 
@@ -67,9 +67,11 @@ public class SelectFromSQL {
             ResultSet resultSet = stmt.executeQuery();
             List<Account> accountList = new LinkedList<>();
             while (resultSet.next()) {
-                accountList.add(new Account(userId, resultSet.getString("account_login")));
+                accountList.add(new Account(userId, resultSet.getString("account_login"),
+                        LocalDateTime.now(),
+                        resultSet.getBoolean("cent_use")));
             }
-            UpdateToSQL.updateWithOrder(accountList, false);
+            UpdateToSQL.updateWithOrder(accountList);
             if (accountList.size() < (five ? 5 : 2)) {
                 accountList = selectAccountWithoutOrderFiveOrTwo(userId, five);
             }
@@ -94,9 +96,10 @@ public class SelectFromSQL {
             ResultSet resultSet = stmt.executeQuery();
             while (resultSet.next()) {
                 accountList.add(new Account(userId, resultSet.getString("account_login"),
-                        LocalDateTime.now()));
+                        LocalDateTime.now(),
+                        resultSet.getBoolean("cent_use")));
             }
-            UpdateToSQL.updateWithoutOrder(accountList, false);
+            UpdateToSQL.updateWithoutOrder(accountList);
             logger.info("Выдано " + (five ? 5 : 2) + " аккаунтов для сбива");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
@@ -107,29 +110,39 @@ public class SelectFromSQL {
     private static List<Account> selectAccWithoutOrder(Long userId, String sql, Boolean delete, Boolean cent) {
         List<Account> accountList = new LinkedList<>();
         try (Connection con = Connecting.getConnection()) {
-            PreparedStatement stmt = con.prepareStatement(cent ? SELECT_ACCOUNT_USE_WITHOUT_ORDER_FOR_CENT : sql);
+            sql = cent ? SELECT_ACCOUNT_USE_WITHOUT_ORDER_FOR_CENT : sql;
+            PreparedStatement stmt = con.prepareStatement(sql);
             stmt.setLong(1, userId);
             ResultSet resultSet = stmt.executeQuery();
             while (resultSet.next()) {
                 accountList.add(new Account(userId, resultSet.getString("account_login"),
-                        resultSet.getTimestamp("last_use").toLocalDateTime()));
+                        resultSet.getTimestamp("last_use").toLocalDateTime(),
+                        sql.equals(SELECT_ACCOUNT_USE_FOR_ORDER) ?
+                                resultSet.getBoolean("cent_use") : cent));
             }
             if (accountList.isEmpty() && cent) {
                 accountList = selectAccWithoutOrder(userId, SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT, false, false);
-            }
-            for (Account acc : accountList) {
-                if (delete) {
-                    DeleteFromSQL.removeAccWithoutOrder(acc.getLogin());
-                    InsertToSQL.addUseAccWithOrder(List.of(acc));
-                } else {
-                    if (sql.equals(SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT))
-                        UpdateToSQL.updateWithOrder(List.of(acc), true);
+                if (!accountList.isEmpty()) {
+                    accountList.get(0).setCentUse(true);
+                    UpdateToSQL.updateWithOrder(accountList);
+                }
+            } else
+                for (Account acc : accountList) {
+                    if (delete) {
+                        DeleteFromSQL.removeAccWithoutOrder(acc.getLogin());
+                        InsertToSQL.addUseAccWithOrder(List.of(acc));
+                    } else {
+//                    if (sql.equals(SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT)) {
+//                      //  acc.setCentUse(cent);
+//                        UpdateToSQL.updateWithOrder(List.of(acc));
+//                    }
 //                    else if (sql.equals(SELECT_ACCOUNT_USE_WITHOUT_ORDER_FOR_CENT))
 //                        UpdateToSQL.updateWithoutOrderForCent(acc);
-                    else
-                        UpdateToSQL.updateWithoutOrder(List.of(acc), cent);
+//                    else {
+                        UpdateToSQL.updateWithoutOrder(List.of(acc)); //Сюда попадаем лишь когда запрашиваем аккаунт без заказов для сбива за цент
+//                    }
+                    }
                 }
-            }
             logger.info("Выдан аккаунт без заказов");
         } catch (SQLException throwables) {
             throwables.printStackTrace();

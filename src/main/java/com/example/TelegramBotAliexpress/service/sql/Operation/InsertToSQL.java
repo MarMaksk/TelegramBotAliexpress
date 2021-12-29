@@ -16,8 +16,8 @@ public class InsertToSQL {
             "\tuser_id, account_login)\n" +
             "\tVALUES (?, ?);";
     private static final String INSERT_ACCOUNT_USE_WITH_ORDER = "INSERT INTO public.accounts_use_with_order(\n" +
-            "\tuser_id, account_login, last_use)\n" +
-            "\tVALUES (?, ?, ?);";
+            "\tuser_id, account_login, last_use, cent_use)\n" +
+            "\tVALUES (?, ?, ?, ?);";
     private static final String INSERT_ACCOUNT_USE_WITHOUT_ORDER = "INSERT INTO public.accounts_use_without_order(\n" +
             "\tuser_id, account_login, last_use, cent_use)\n" +
             "\tVALUES (?, ?, ?, ?);";
@@ -64,8 +64,7 @@ public class InsertToSQL {
                     stmt.setLong(1, account.getIdUser());
                     stmt.setString(2, account.getLogin());
                     stmt.setObject(3, account.getLastUse());
-                    if (insertAccount.equals(INSERT_ACCOUNT_USE_WITHOUT_ORDER))
-                        stmt.setBoolean(4, account.isCentUse());
+                    stmt.setBoolean(4, account.isCentUse());
                     stmt.addBatch();
                 }
                 stmt.executeBatch();

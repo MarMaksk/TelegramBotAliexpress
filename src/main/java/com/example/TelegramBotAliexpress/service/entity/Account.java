@@ -29,6 +29,12 @@ public class Account {
         this.login = login;
     }
 
+    public Account(long idUser, String login, boolean centUse) {
+        this.idUser = idUser;
+        this.login = login;
+        this.centUse = centUse;
+    }
+
     public LocalDateTime getLastUse() {
         return lastUse;
     }
