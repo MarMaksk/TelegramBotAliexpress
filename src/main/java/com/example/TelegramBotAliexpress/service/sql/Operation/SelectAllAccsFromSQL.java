@@ -3,10 +3,8 @@ package com.example.TelegramBotAliexpress.service.sql.Operation;
 import com.example.TelegramBotAliexpress.service.entity.Account;
 import com.example.TelegramBotAliexpress.service.sql.Connecting;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -32,18 +30,21 @@ public class SelectAllAccsFromSQL {
         return getAccounts(userId, SELECT_ACCOUNT_USE_WITHOUT_ORDER);
     }
 
-    private static List<Account> getAccounts(Long userId, String selectAccountNew) {
+    private static List<Account> getAccounts(Long userId, String sql) {
         List<Account> accountList = new LinkedList<>();
         try (Connection con = Connecting.getConnection()) {
-            PreparedStatement stmt = con.prepareStatement(selectAccountNew);
+            PreparedStatement stmt = con.prepareStatement(sql);
             stmt.setLong(1, userId);
             ResultSet resultSet = stmt.executeQuery();
             StringBuilder res = new StringBuilder();
             while (resultSet.next()) {
                 accountList.add(new Account(userId,
                         resultSet.getString("account_login"),
-                        resultSet.getTimestamp("last_use").toLocalDateTime(),
-                        resultSet.getBoolean("cent_use")));
+                        sql.equals(SELECT_ACCOUNT_NEW) ?
+                                LocalDateTime.now().minusWeeks(1)
+                                :
+                                resultSet.getTimestamp("last_use").toLocalDateTime(),
+                        !sql.equals(SELECT_ACCOUNT_NEW) && resultSet.getBoolean("cent_use")));
             }
             logger.info("Выданы все аккаунты");
         } catch (SQLException throwables) {

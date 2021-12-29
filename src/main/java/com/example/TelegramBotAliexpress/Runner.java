@@ -4,6 +4,7 @@ import com.example.TelegramBotAliexpress.service.entity.SpentAccAndMoney;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
 import com.example.TelegramBotAliexpress.enums.BotState;
 import com.example.TelegramBotAliexpress.enums.MessageType;
@@ -11,7 +12,6 @@ import com.example.TelegramBotAliexpress.service.PreparationForDeleteAccounts;
 import com.example.TelegramBotAliexpress.service.MessageForUser;
 import com.example.TelegramBotAliexpress.service.entity.TelegramUser;
 import com.example.TelegramBotAliexpress.service.sql.Operation.PriceOperation;
-import com.example.TelegramBotAliexpress.service.sql.Operation.SelectAllAccsFromSQL;
 import com.example.TelegramBotAliexpress.service.sql.Operation.SelectFromSQL;
 import com.example.TelegramBotAliexpress.service.PreparationForInsert;
 
@@ -29,13 +29,23 @@ public class Runner {
         bot.setUpdatesListener(lst -> {
             lst.forEach(update -> {
                         new Thread(() -> {
+                            Long userId = update.message().from().id();
+                            if (update.message().text().contains("https://")) {
+                                bot.execute(new DeleteMessage(userId, update.message().messageId()));
+                                bot.execute(new SendMessage(userId, update.message().text()).disableWebPagePreview(true));
+                            }
                             if (update.message().text() == null) {
-                                bot.execute(new SendMessage(update.message().from().id(), "Бот читает только символы, буквы и цифры"));
+                                if (update.message().caption().contains("https://")) {
+                                    String[] split = update.message().caption().split("\n");
+                                    String link = split[1];
+                                    bot.execute(new DeleteMessage(userId, update.message().messageId()));
+                                    bot.execute(new SendMessage(userId, link).disableWebPagePreview(true));
+                                } else
+                                    bot.execute(new SendMessage(userId, "Бот читает только символы, буквы и цифры"));
                                 return;
                             }
-                            Long userId = update.message().from().id();
                             System.out.println(update.message().text());
-                            MessageForUser message = new MessageForUser(bot);
+                            MessageForUser message = new MessageForUser(bot, userId);
                             switch (messageType(update)) {
                                 case START:
                                     message.greeting(userId);
@@ -149,7 +159,7 @@ public class Runner {
         PreparationForInsert addition = new PreparationForInsert(update.message().from().id(), update.message().text());
         String text = update.message().text();
         long userId = update.message().from().id();
-        MessageForUser message = new MessageForUser(bot);
+        MessageForUser message = new MessageForUser(bot, userId);
         BotState userStatus = user.getUserCurrentBotState(userId);
         if (text.equals("/start")) return MessageType.START;
         if (text.equals("/adnc")) return MessageType.addNewAcc;
@@ -171,7 +181,7 @@ public class Runner {
         if (text.equals("/deleteacc")) return MessageType.DELETE_ACC;
         if (text.equals("/deleteallacc")) return MessageType.DELETE_ALL_ACC;
         if (text.equals("/getallaccs")) {
-            message.allAccountsToUser(userId);
+            message.allAccountsToUser();
         }
         if (userStatus == BotState.DELETE_ALL_ACC) {
             if (text.matches("[1-4]")) {
