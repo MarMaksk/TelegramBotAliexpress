@@ -171,12 +171,7 @@ public class Runner {
         if (text.equals("/deleteacc")) return MessageType.DELETE_ACC;
         if (text.equals("/deleteallacc")) return MessageType.DELETE_ALL_ACC;
         if (text.equals("/getallaccs")) {
-            message.simpleAnswer(userId, "Все аккаунты новичка:");
-            message.simpleAnswer(userId, SelectAllAccsFromSQL.selectNewAccounts(userId));
-            message.simpleAnswer(userId, "Все аккаунты без заказов:");
-            message.simpleAnswer(userId, SelectAllAccsFromSQL.selectAccWithoutOrder(userId));
-            message.simpleAnswer(userId, "Все аккаунты с заказами:");
-            message.simpleAnswer(userId, SelectAllAccsFromSQL.selectAccWithOrder(userId));
+            message.allAccountsToUser(userId);
         }
         if (userStatus == BotState.DELETE_ALL_ACC) {
             if (text.matches("[1-4]")) {

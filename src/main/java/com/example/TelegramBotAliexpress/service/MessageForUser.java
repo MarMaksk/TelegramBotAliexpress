@@ -1,5 +1,6 @@
 package com.example.TelegramBotAliexpress.service;
 
+import com.example.TelegramBotAliexpress.service.sql.Operation.SelectAllAccsFromSQL;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardMarkup;
 import com.pengrad.telegrambot.model.request.ReplyKeyboardRemove;
@@ -9,6 +10,8 @@ import com.example.TelegramBotAliexpress.service.entity.Account;
 import com.example.TelegramBotAliexpress.service.entity.TelegramUser;
 import com.example.TelegramBotAliexpress.service.sql.Operation.PriceOperation;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class MessageForUser {
@@ -63,6 +66,30 @@ public class MessageForUser {
     public void answerAddition(long userId, PreparationForInsert addition) {
         simpleAnswer(userId, "Успешно добавлено: " + addition.getCount() + " аккаунта(ов)");
         TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
+    }
+
+    public void allAccountsToUser(long userId) {
+        simpleAnswer(userId, "Все аккаунты новичка:");
+        List<Account> accountListNew = SelectAllAccsFromSQL.selectNewAccounts(userId);
+        accountListNew.forEach(acc -> simpleAnswer(userId, acc.getLogin()));
+        simpleAnswer(userId, "Аккаунты без заказов использованные в течении последних 24 часов:");
+        List<Account> accountsWithoutOrder = SelectAllAccsFromSQL.selectAccWithoutOrder(userId);
+        for (Account account : accountsWithoutOrder)
+            if (account.getLastUse().isAfter(LocalDateTime.now().minusDays(1)))
+                simpleAnswer(userId, account.getLogin() + " цент: " + (account.isCentUse() ? "Да" : "Нет"));
+        simpleAnswer(userId, "Аккаунты без заказов не использованные в течении последних 24 часов");
+        for (Account account : accountsWithoutOrder)
+            if (account.getLastUse().isBefore(LocalDateTime.now().minusDays(1)))
+                simpleAnswer(userId, account.getLogin() + " цент: " + (account.isCentUse() ? "Да" : "Нет"));
+        simpleAnswer(userId, "Аккаунты с заказом использованные в течении последних 24 часов:");
+        List<Account> accountsWithOrder = SelectAllAccsFromSQL.selectAccWithOrder(userId);
+        for (Account account : accountsWithOrder)
+            if (account.getLastUse().isAfter(LocalDateTime.now().minusDays(1)))
+                simpleAnswer(userId, account.getLogin() + " цент: " + (account.isCentUse() ? "Да" : "Нет"));
+        simpleAnswer(userId, "Аккаунты с заказом не использованные в течении последних 24 часов");
+        for (Account account : accountsWithOrder)
+            if (account.getLastUse().isBefore(LocalDateTime.now().minusDays(1)))
+                simpleAnswer(userId, account.getLogin() + " цент: " + (account.isCentUse() ? "Да" : "Нет"));
     }
 
     public void greeting(long userId) {
