@@ -40,7 +40,6 @@ public class MessageForUser {
             bot.execute(new SendMessage(userId, account.get(1).getLogin()).replyMarkup(replyKeyboardMarkup));
         } else if (one) {
             bot.execute(new SendMessage(userId, account.get(0).getLogin()));
-            simpleAnswer("0.01$ добавлено к общей сумме за день");
             TelegramUser.setMoneySpent(userId, 0.01);
             PriceOperation.priceInsert(userId, true);
         } else {

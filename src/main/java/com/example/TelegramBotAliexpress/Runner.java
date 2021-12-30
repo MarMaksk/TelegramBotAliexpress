@@ -193,7 +193,7 @@ public class Runner {
             TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
         }
         if (userStatus == BotState.SELECT_PRICE) {
-            message.simpleAnswer(text + " добавлено к общей сумме за день");
+            bot.execute(new DeleteMessage(userId, update.message().messageId()));
             TelegramUser.setMoneySpent(userId, Double.valueOf(text.replace("$", "")));
             TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
             PriceOperation.priceInsert(userId, false);
