@@ -23,7 +23,7 @@ public class MessageForUser {
     }
 
 
-    public void sendNewAcc(long userId, List<Account> account, boolean one) {
+    public void sendNewAcc(List<Account> account, boolean one) {
         if (account.isEmpty()) {
             bot.execute(new SendMessage(userId, "Доступных аккаунтов не найдено"));
             return;
@@ -40,15 +40,15 @@ public class MessageForUser {
             bot.execute(new SendMessage(userId, account.get(1).getLogin()).replyMarkup(replyKeyboardMarkup));
         } else if (one) {
             bot.execute(new SendMessage(userId, account.get(0).getLogin()));
-            simpleAnswer(userId, "0.01$ добавлено к общей сумме за день");
+            simpleAnswer("0.01$ добавлено к общей сумме за день");
             TelegramUser.setMoneySpent(userId, 0.01);
             PriceOperation.priceInsert(userId, true);
         } else {
-            simpleAnswer(userId, "К получению доступен лишь 1 аккаунт");
+            simpleAnswer("К получению доступен лишь 1 аккаунт");
         }
     }
 
-    public void sendAcc(long userId, List<Account> account) {
+    public void sendAcc(List<Account> account) {
         if (account.isEmpty()) {
             bot.execute(new SendMessage(userId, "Доступных аккаунтов не найдено"));
             return;
@@ -58,32 +58,32 @@ public class MessageForUser {
         account.forEach(acc -> bot.execute(new SendMessage(userId, acc.getLogin())));
     }
 
-    public void simpleAnswer(long userId, String answer) {
+    public void simpleAnswer(String answer) {
         ReplyKeyboardRemove rkr = new ReplyKeyboardRemove();
         bot.execute(new SendMessage(userId, answer).replyMarkup(rkr));
     }
 
-    public void answerAddition(long userId, PreparationForInsert addition) {
-        simpleAnswer(userId, "Успешно добавлено: " + addition.getCount() + " аккаунта(ов)");
+    public void answerAddition(PreparationForInsert addition) {
+        simpleAnswer("Успешно добавлено: " + addition.getCount() + " аккаунта(ов)");
         TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
     }
 
     public void allAccountsToUser() {
         StringBuilder sb = new StringBuilder();
-        simpleAnswer(userId, "Все аккаунты новичка:");
+        simpleAnswer("Все аккаунты новичка:");
         List<Account> accountListNew = SelectAllAccsFromSQL.selectNewAccounts(userId);
         accountListNew.forEach(acc -> sb.append(acc.getLogin()).append("\n"));
-        simpleAnswer(userId, sb.toString());
+        simpleAnswer(sb.toString());
         sb.delete(0, sb.length());
-        simpleAnswer(userId, "Аккаунты без заказов использованные в течении последних 24 часов:");
+        simpleAnswer("Аккаунты без заказов использованные в течении последних 24 часов:");
         List<Account> accountsWithoutOrder = SelectAllAccsFromSQL.selectAccWithoutOrder(userId);
         preparationAccsAfter(sb, accountsWithoutOrder);
-        simpleAnswer(userId, "Аккаунты без заказов не использованные в течении последних 24 часов");
+        simpleAnswer("Аккаунты без заказов не использованные в течении последних 24 часов");
         preparationAccsBefore(sb, accountsWithoutOrder);
-        simpleAnswer(userId, "Аккаунты с заказом использованные в течении последних 24 часов:");
+        simpleAnswer("Аккаунты с заказом использованные в течении последних 24 часов:");
         List<Account> accountsWithOrder = SelectAllAccsFromSQL.selectAccWithOrder(userId);
         preparationAccsAfter(sb, accountsWithOrder);
-        simpleAnswer(userId, "Аккаунты с заказом не использованные в течении последних 24 часов");
+        simpleAnswer("Аккаунты с заказом не использованные в течении последних 24 часов");
         preparationAccsBefore(sb, accountsWithOrder);
     }
 
@@ -91,7 +91,7 @@ public class MessageForUser {
         for (Account account : accountsWithoutOrder)
             if (account.getLastUse().isAfter(LocalDateTime.now().minusDays(1)))
                 sb.append(account.getLogin()).append(" ").append(account.isCentUse() ? "Да" : "Нет").append("\n");
-        simpleAnswer(userId, sb.toString());
+        simpleAnswer(sb.toString());
         sb.delete(0, sb.length());
     }
 
@@ -99,11 +99,11 @@ public class MessageForUser {
         for (Account account : accountList)
             if (account.getLastUse().isBefore(LocalDateTime.now().minusDays(1)))
                 sb.append(account.getLogin()).append(" ").append(account.isCentUse() ? "Да" : "Нет").append("\n");
-        simpleAnswer(userId, sb.toString());
+        simpleAnswer(sb.toString());
         sb.delete(0, sb.length());
     }
 
-    public void greeting(long userId) {
+    public void greeting() {
         bot.execute(new SendMessage(userId, "Hi. " +
                 "Бот самостоятельно следит за использованными аккаунтами и их не надо несколько раз добавлять. " +
                 "Инструкция по командам:\n" +

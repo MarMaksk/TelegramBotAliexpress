@@ -30,29 +30,26 @@ public class Runner {
             lst.forEach(update -> {
                         new Thread(() -> {
                             Long userId = update.message().from().id();
-                            if (update.message().text().contains("https://")) {
-                                bot.execute(new DeleteMessage(userId, update.message().messageId()));
-                                bot.execute(new SendMessage(userId, update.message().text()).disableWebPagePreview(true));
-                            }
                             if (update.message().text() == null) {
                                 if (update.message().caption().contains("https://")) {
                                     String[] split = update.message().caption().split("\n");
                                     String link = split[1];
                                     bot.execute(new DeleteMessage(userId, update.message().messageId()));
                                     bot.execute(new SendMessage(userId, link).disableWebPagePreview(true));
-                                } else
+                                } else {
                                     bot.execute(new SendMessage(userId, "Бот читает только символы, буквы и цифры"));
+                                }
                                 return;
                             }
                             System.out.println(update.message().text());
                             MessageForUser message = new MessageForUser(bot, userId);
                             switch (messageType(update)) {
                                 case START:
-                                    message.greeting(userId);
+                                    message.greeting();
                                     break;
                                 case addNewAcc:
                                     TelegramUser.setUserCurrentBotState(userId, BotState.ADD_NEW_USER);
-                                    message.simpleAnswer(userId, "Введите аккаунты в формате:\n" +
+                                    message.simpleAnswer("Введите аккаунты в формате:\n" +
                                             "Логин\n" +
                                             "Логин\n" +
                                             "Логин\n" +
@@ -60,7 +57,7 @@ public class Runner {
                                     break;
                                 case addUseAccWithOrders:
                                     TelegramUser.setUserCurrentBotState(userId, BotState.ADD_USE_ACC_WITH_ORDERS);
-                                    message.simpleAnswer(userId, "Введите аккаунты (с заказами) в формате:\n" +
+                                    message.simpleAnswer("Введите аккаунты (с заказами) в формате:\n" +
                                             "Логин\n" +
                                             "Логин\n" +
                                             "Логин\n" +
@@ -68,7 +65,7 @@ public class Runner {
                                     break;
                                 case addUseAccWithOrdersToday:
                                     TelegramUser.setUserCurrentBotState(userId, BotState.ADD_USE_ACC_WITH_ORDERS_TODAY);
-                                    message.simpleAnswer(userId, "Введите аккаунты (с заказами и использованные в течении последних 24 часов) в формате:\n" +
+                                    message.simpleAnswer("Введите аккаунты (с заказами и использованные в течении последних 24 часов) в формате:\n" +
                                             "Логин\n" +
                                             "Логин\n" +
                                             "Логин\n" +
@@ -76,7 +73,7 @@ public class Runner {
                                     break;
                                 case addUseAccWithoutOrders:
                                     TelegramUser.setUserCurrentBotState(userId, BotState.ADD_USE_ACC_WITHOUT_ORDERS);
-                                    message.simpleAnswer(userId, "Введите аккаунты (без заказов) в формате:\n" +
+                                    message.simpleAnswer("Введите аккаунты (без заказов) в формате:\n" +
                                             "Логин\n" +
                                             "Логин\n" +
                                             "Логин\n" +
@@ -84,36 +81,36 @@ public class Runner {
                                     break;
                                 case addUseAccWithoutOrdersToday:
                                     TelegramUser.setUserCurrentBotState(userId, BotState.ADD_USE_ACC_WITHOUT_ORDERS_TODAY);
-                                    message.simpleAnswer(userId, "Введите аккаунты (без заказов и использованные в течении последних 24 часов) в формате:\n" +
+                                    message.simpleAnswer("Введите аккаунты (без заказов и использованные в течении последних 24 часов) в формате:\n" +
                                             "Логин\n" +
                                             "Логин\n" +
                                             "Логин\n" +
                                             "и т.д.");
                                     break;
                                 case getNewAcc:
-                                    message.sendNewAcc(userId, SelectFromSQL.selectNewAccounts(userId, true), true);
+                                    message.sendNewAcc(SelectFromSQL.selectNewAccounts(userId, true), true);
                                     break;
                                 case getTwoNewAcc:
-                                    message.sendNewAcc(userId, SelectFromSQL.selectNewAccounts(userId, false), false);
+                                    message.sendNewAcc(SelectFromSQL.selectNewAccounts(userId, false), false);
                                     break;
                                 case getAccForOrder:
-                                    message.sendAcc(userId, SelectFromSQL.selectAccountForOrder(userId, true, false));
+                                    message.sendAcc(SelectFromSQL.selectAccountForOrder(userId, true, false));
                                     break;
                                 case getAccForHelpFive:
-                                    message.sendAcc(userId, SelectFromSQL.selectAccWithOrder(userId, true));
+                                    message.sendAcc(SelectFromSQL.selectAccWithOrder(userId, true));
                                     break;
                                 case getAccForHelpTwo:
-                                    message.sendAcc(userId, SelectFromSQL.selectAccWithOrder(userId, false));
+                                    message.sendAcc(SelectFromSQL.selectAccWithOrder(userId, false));
                                     break;
                                 case getAccForCent:
-                                    message.sendAcc(userId, SelectFromSQL.selectAccountForOrder(userId, false, true));
+                                    message.sendAcc(SelectFromSQL.selectAccountForOrder(userId, false, true));
                                     break;
                                 case DELETE_ACC:
-                                    message.simpleAnswer(userId, "Введите логин аккаунта который требуется удалить");
+                                    message.simpleAnswer("Введите логин аккаунта который требуется удалить");
                                     TelegramUser.setUserCurrentBotState(userId, BotState.DELETE_ACCOUNT);
                                     break;
                                 case DELETE_ALL_ACC:
-                                    message.simpleAnswer(userId, "Для очистки базы новых аккаунтов введите 1\n" +
+                                    message.simpleAnswer("Для очистки базы новых аккаунтов введите 1\n" +
                                             "Для очистки базы аккаунтов с заказами введите 2\n" +
                                             "Для очистки базы аккаунтов без заказов введите 3\n" +
                                             "Для очистки всех баз введите 4\n" +
@@ -124,14 +121,14 @@ public class Runner {
                                     getSpentToday(userId, message);
                                     break;
                                 case GET_SPENT_ALL:
-                                    message.simpleAnswer(userId, PriceOperation.priceSelectAll(userId).equals("")
+                                    message.simpleAnswer(PriceOperation.priceSelectAll(userId).equals("")
                                             ? "Трат не найдено" : PriceOperation.priceSelectAll(userId));
                                     break;
                                 case DELETE_SPENT:
                                     PriceOperation.priceDelete(userId);
                                     break;
                                 case SPLITE_ACCS:
-                                    message.simpleAnswer(userId, "Готов к разделению");
+                                    message.simpleAnswer("Готов к разделению");
                                     TelegramUser.setUserCurrentBotState(userId, BotState.SPLIT_ACCOUNTS);
                                     break;
                                 default:
@@ -147,11 +144,11 @@ public class Runner {
     private void getSpentToday(Long userId, MessageForUser message) {
         SpentAccAndMoney spentAccAndMoney = PriceOperation.priceSelectToday(userId);
         if (spentAccAndMoney != null) {
-            message.simpleAnswer(userId, "Сегодня потрачено: " + spentAccAndMoney.getSpentMoney() + "$\n" +
+            message.simpleAnswer("Сегодня потрачено: " + spentAccAndMoney.getSpentMoney() + "$\n" +
                     "Аккаунтов за день: " + spentAccAndMoney.getSpentTotalAccs() + "\n" +
                     "Сбивов за цент: " + spentAccAndMoney.getSpentAccsForCent());
         } else {
-            message.simpleAnswer(userId, "Сегодня трат не было");
+            message.simpleAnswer("Сегодня трат не было");
         }
     }
 
@@ -161,6 +158,10 @@ public class Runner {
         long userId = update.message().from().id();
         MessageForUser message = new MessageForUser(bot, userId);
         BotState userStatus = user.getUserCurrentBotState(userId);
+        if (text.contains("https://")) {
+            bot.execute(new DeleteMessage(userId, update.message().messageId()));
+            bot.execute(new SendMessage(userId, text).disableWebPagePreview(true));
+        }
         if (text.equals("/start")) return MessageType.START;
         if (text.equals("/adnc")) return MessageType.addNewAcc;
         if (text.equals("/aduawo")) return MessageType.addUseAccWithOrders;
@@ -186,13 +187,13 @@ public class Runner {
         if (userStatus == BotState.DELETE_ALL_ACC) {
             if (text.matches("[1-4]")) {
                 PreparationForDeleteAccounts.deleteAllAcc(userId, text);
-                message.simpleAnswer(userId, "Аккаунты удалены успешно");
+                message.simpleAnswer("Аккаунты удалены успешно");
             } else
-                message.simpleAnswer(userId, "Удаление отменено");
+                message.simpleAnswer("Удаление отменено");
             TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
         }
         if (userStatus == BotState.SELECT_PRICE) {
-            message.simpleAnswer(userId, text + " добавлено к общей сумме за день");
+            message.simpleAnswer(text + " добавлено к общей сумме за день");
             TelegramUser.setMoneySpent(userId, Double.valueOf(text.replace("$", "")));
             TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
             PriceOperation.priceInsert(userId, false);
@@ -200,27 +201,27 @@ public class Runner {
         if (userStatus == BotState.DELETE_ACCOUNT) {
             int deleteAcc = PreparationForDeleteAccounts.deleteAcc(text);
             TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
-            message.simpleAnswer(userId, "Успешно удалено: " + deleteAcc + " аккаунта(ов)");
+            message.simpleAnswer("Успешно удалено: " + deleteAcc + " аккаунта(ов)");
         }
         if (userStatus == BotState.ADD_NEW_USER) {
             addition.addNewAcc();
-            message.answerAddition(userId, addition);
+            message.answerAddition(addition);
         }
         if (userStatus == BotState.ADD_USE_ACC_WITH_ORDERS) {
             addition.addUseAccWithOrders(false);
-            message.answerAddition(userId, addition);
+            message.answerAddition(addition);
         }
         if (userStatus == BotState.ADD_USE_ACC_WITH_ORDERS_TODAY) {
             addition.addUseAccWithOrders(true);
-            message.answerAddition(userId, addition);
+            message.answerAddition(addition);
         }
         if (userStatus == BotState.ADD_USE_ACC_WITHOUT_ORDERS) {
             addition.addUseAccWithoutOrders(false);
-            message.answerAddition(userId, addition);
+            message.answerAddition(addition);
         }
         if (userStatus == BotState.ADD_USE_ACC_WITHOUT_ORDERS_TODAY) {
             addition.addUseAccWithoutOrders(true);
-            message.answerAddition(userId, addition);
+            message.answerAddition(addition);
         }
         if (userStatus == BotState.SPLIT_ACCOUNTS) {
             splitAccounts(text, userId, message);
@@ -237,7 +238,7 @@ public class Runner {
                 .split(" ");
         Arrays.stream(accounts).forEach(acc -> {
             if (acc.contains("@"))
-                message.simpleAnswer(userId, acc.trim());
+                message.simpleAnswer(acc.trim());
         });
         TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
     }
