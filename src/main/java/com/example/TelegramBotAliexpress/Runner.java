@@ -1,6 +1,8 @@
 package com.example.TelegramBotAliexpress;
 
+import com.example.TelegramBotAliexpress.service.entity.Account;
 import com.example.TelegramBotAliexpress.service.entity.SpentAccAndMoney;
+import com.example.TelegramBotAliexpress.service.sql.Operation.SelectAllAccsFromSQL;
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.UpdatesListener;
 import com.pengrad.telegrambot.model.Update;
@@ -143,10 +145,14 @@ public class Runner {
 
     private void getSpentToday(Long userId, MessageForUser message) {
         SpentAccAndMoney spentAccAndMoney = PriceOperation.priceSelectToday(userId);
+        int countAccsWithoutCent = 0;
+        countAccsWithoutCent += SelectAllAccsFromSQL.selectAccWithOrder(userId).stream().filter(acc -> !acc.isCentUse()).count();
+        countAccsWithoutCent += SelectAllAccsFromSQL.selectAccWithoutOrder(userId).stream().filter(acc -> !acc.isCentUse()).count();
         if (spentAccAndMoney != null) {
             message.simpleAnswer("Сегодня потрачено: " + spentAccAndMoney.getSpentMoney() + "$\n" +
                     "Аккаунтов за день: " + spentAccAndMoney.getSpentTotalAccs() + "\n" +
-                    "Сбивов за цент: " + spentAccAndMoney.getSpentAccsForCent());
+                    "Сбивов за цент: " + spentAccAndMoney.getSpentAccsForCent() + "\n" +
+                    "Осталось для сбива за цент: " + countAccsWithoutCent);
         } else {
             message.simpleAnswer("Сегодня трат не было");
         }

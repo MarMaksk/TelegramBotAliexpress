@@ -52,8 +52,6 @@ public class MessageForUser {
             bot.execute(new SendMessage(userId, "Доступных аккаунтов не найдено"));
             return;
         }
-        bot.execute(new SendMessage(userId, "Аккаунт будет доступен через 24 часа. " +
-                "Если это был аккаунт для заказа то всё равно доступен для сбива"));
         account.forEach(acc -> bot.execute(new SendMessage(userId, acc.getLogin())));
     }
 

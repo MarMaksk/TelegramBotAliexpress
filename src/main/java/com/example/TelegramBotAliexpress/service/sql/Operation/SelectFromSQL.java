@@ -14,9 +14,9 @@ import java.util.logging.Logger;
 
 public class SelectFromSQL {
     private static final String SELECT_ACCOUNT_NEW_ONE = "SELECT account_login\n" +
-            "\tFROM public.accounts_new WHERE user_id = ? LIMIT 1";
+            "\tFROM public.accounts_new WHERE user_id = ? ORDER BY id LIMIT 1";
     private static final String SELECT_ACCOUNT_NEW_TWO = "SELECT account_login\n" +
-            "\tFROM public.accounts_new WHERE user_id = ? LIMIT 2";
+            "\tFROM public.accounts_new WHERE user_id = ? ORDER BY id LIMIT 2";
     private static final String SELECT_ACCOUNT_USE_WITH_ORDER_TWO = "SELECT account_login, cent_use\n" +
             "\tFROM public.accounts_use_with_order WHERE user_id = ? AND last_use < now() - '1 days' :: interval LIMIT 2";
     private static final String SELECT_ACCOUNT_USE_WITH_ORDER_FIVE = "SELECT account_login, cent_use\n" +

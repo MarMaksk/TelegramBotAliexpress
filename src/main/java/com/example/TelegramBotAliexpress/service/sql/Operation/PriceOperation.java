@@ -104,7 +104,6 @@ public class PriceOperation {
         try (Connection con = Connecting.getConnection()) {
             PreparedStatement stmt = con.prepareStatement(SELECT_MONEY_ALL);
             try {
-                LocalDateTime ldt = LocalDateTime.now();
                 stmt.setLong(1, userId);
                 ResultSet resultSet = stmt.executeQuery();
                 while (resultSet.next()) {
