@@ -6,14 +6,13 @@ import com.example.TelegramBotAliexpress.service.entity.TelegramUser;
 import com.example.TelegramBotAliexpress.service.sql.Operation.InsertToSQL;
 
 import java.time.LocalDateTime;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 public class PreparationForInsert {
     private static LocalDateTime dateTime = LocalDateTime.now();
     private long userId;
     private String message;
-    private List<Account> accountList = new LinkedList<>();
     private int count;
 
 
@@ -23,37 +22,32 @@ public class PreparationForInsert {
     }
 
     public void addNewAcc() {
-        preparation(false);
-        InsertToSQL.addNewAccounts(accountList);
-        accountList = new LinkedList<>();
+        this.count = (int) InsertToSQL.addNewAccounts(preparation(false));
     }
 
     public void addUseAccWithOrders(Boolean use) {
-        preparation(use);
-        InsertToSQL.addUseAccWithOrder(accountList);
-        accountList = new LinkedList<>();
+        this.count = (int) InsertToSQL.addUseAccWithOrder(preparation(use));
     }
 
     public void addUseAccWithoutOrders(Boolean use) {
-        preparation(use);
-        InsertToSQL.addUseAccWithoutOrder(accountList);
-        accountList = new LinkedList<>();
+        this.count = (int) InsertToSQL.addUseAccWithoutOrder(preparation(use));
     }
 
-    private void preparation(Boolean use) {
+    private List<Account> preparation(Boolean use) {
+        List<Account> accountList = new ArrayList<>();
         String[] accounts = message
                 .replaceAll("\\n", " ")
                 .replaceAll("\\\\", " ")
                 .replaceAll("\\+", "")
                 .split(" ");
-        for (int i = 0; i < accounts.length; i++) {
-            if (!accounts[i].contains("@"))
+        for (String account : accounts) {
+            if (!account.contains("@"))
                 continue;
-            accountList.add(new Account(userId, accounts[i].trim(),
+            accountList.add(new Account(userId, account.trim(),
                     use ? dateTime : dateTime.minusWeeks(1)));
-            count++;
         }
         TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
+        return accountList;
     }
 
     public int getCount() {

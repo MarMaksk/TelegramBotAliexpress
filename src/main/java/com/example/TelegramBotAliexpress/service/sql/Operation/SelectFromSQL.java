@@ -32,7 +32,7 @@ public class SelectFromSQL {
     private static final String SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT = "SELECT account_login, last_use\n" +
             "\tFROM public.accounts_use_with_order WHERE user_id = ? AND cent_use = false AND last_use < now() - '1 days' :: interval LIMIT 1";
     private static final String SELECT_ACCOUNT_USE_FOR_ORDER = "SELECT account_login, last_use, cent_use\n" +
-            "\tFROM public.accounts_use_without_order WHERE user_id = ? LIMIT 1";
+            "\tFROM public.accounts_use_without_order WHERE user_id = ? ORDER BY id LIMIT 1";
     private static Logger logger = Logger.getLogger("SelectFromSQL");
 
     public static List<Account> selectNewAccounts(Long userId, boolean centUse) {
@@ -49,7 +49,7 @@ public class SelectFromSQL {
             }
             if (!account.isEmpty()) {
                 InsertToSQL.addUseAccWithoutOrder(account);
-                account.forEach(acc -> DeleteFromSQL.removeNewAccount(acc.getLogin()));
+                account.forEach(acc -> DeleteFromSQL.removeNewAccount(userId, acc.getLogin()));
                 logger.info("Выдан новый аккаунт");
             }
             return account;
@@ -129,7 +129,7 @@ public class SelectFromSQL {
             } else
                 for (Account acc : accountList) {
                     if (delete) {
-                        DeleteFromSQL.removeAccWithoutOrder(acc.getLogin());
+                        DeleteFromSQL.removeAccWithoutOrder(userId, acc.getLogin());
                         InsertToSQL.addUseAccWithOrder(List.of(acc));
                     } else {
 //                    if (sql.equals(SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT)) {

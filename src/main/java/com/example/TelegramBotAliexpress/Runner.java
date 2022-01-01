@@ -205,7 +205,7 @@ public class Runner {
             PriceOperation.priceInsert(userId, false);
         }
         if (userStatus == BotState.DELETE_ACCOUNT) {
-            int deleteAcc = PreparationForDeleteAccounts.deleteAcc(text);
+            int deleteAcc = PreparationForDeleteAccounts.deleteAcc(userId,text);
             TelegramUser.setUserCurrentBotState(userId, BotState.WAIT_STATUS);
             message.simpleAnswer("Успешно удалено: " + deleteAcc + " аккаунта(ов)");
         }

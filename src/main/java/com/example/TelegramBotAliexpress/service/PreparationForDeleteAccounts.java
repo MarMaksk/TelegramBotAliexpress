@@ -10,7 +10,8 @@ import java.util.logging.Logger;
 
 public class PreparationForDeleteAccounts {
     private static Logger logger = Logger.getLogger("DeleteAccount");
-    public static int deleteAcc(String login) {
+
+    public static int deleteAcc(Long userId, String login) {
         int count = 0;
         String[] accounts = login.replaceAll("\\n", " ").replaceAll("\\\\", " ").split(" ");
         List<String> deleteList = new ArrayList<>();
@@ -18,12 +19,11 @@ public class PreparationForDeleteAccounts {
             if (!account.contains("@"))
                 continue;
             deleteList.add(account);
-            count++;
             logger.info(account + " отправлен на удаление");
         }
-        DeleteFromSQL.removeNewAccount(deleteList);
-        DeleteFromSQL.removeAccWithOrder(deleteList);
-        DeleteFromSQL.removeAccWithoutOrder(deleteList);
+        count += DeleteFromSQL.removeNewAccount(userId, deleteList);
+        count += DeleteFromSQL.removeAccWithOrder(userId, deleteList);
+        count += DeleteFromSQL.removeAccWithoutOrder(userId, deleteList);
         return count;
     }
 
