@@ -21,7 +21,7 @@ public class PriceOperation {
     private static final String SELECT_MONEY_DATE = "SELECT spent_money, account_total, accounts_cent\n" +
             "\tFROM public.users_price WHERE user_id = ? AND calendar_date = ?";
     private static final String SELECT_MONEY_ALL = "SELECT calendar_date, spent_money, account_total, accounts_cent\n" +
-            "\tFROM public.users_price WHERE user_id = ?";
+            "\tFROM public.users_price WHERE user_id = ? ORDER BY id";
     private static final String DELETE_MONEY = "DELETE FROM public.users_price\n" +
             "\tWHERE user_id = ? AND calendar_date = ?";
     private static Logger logger = Logger.getLogger("PriceOperation");

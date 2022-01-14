@@ -132,13 +132,6 @@ public class SelectFromSQL {
                         DeleteFromSQL.removeAccWithoutOrder(userId, acc.getLogin());
                         InsertToSQL.addUseAccWithOrder(List.of(acc));
                     } else {
-//                    if (sql.equals(SELECT_ACCOUNT_USE_WITH_ORDER_FOR_CENT)) {
-//                      //  acc.setCentUse(cent);
-//                        UpdateToSQL.updateWithOrder(List.of(acc));
-//                    }
-//                    else if (sql.equals(SELECT_ACCOUNT_USE_WITHOUT_ORDER_FOR_CENT))
-//                        UpdateToSQL.updateWithoutOrderForCent(acc);
-//                    else {
                         UpdateToSQL.updateWithoutOrder(List.of(acc)); //Сюда попадаем лишь когда запрашиваем аккаунт без заказов для сбива за цент
 //                    }
                     }
