@@ -8,11 +8,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class TelegramBotAliexpressApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(TelegramBotAliexpressApplication.class, args);
-		TelegramBot bot = new TelegramBot(Config.getProperty(Config.BOT_TOKEN));
-		Runner run = new Runner(bot);
-		run.run();
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(TelegramBotAliexpressApplication.class, args);
+        TelegramBot bot = new TelegramBot(Config.getProperty(Config.BOT_TOKEN));
+        Runner run = new Runner(bot);
+        run.run();
+    }
 
 }

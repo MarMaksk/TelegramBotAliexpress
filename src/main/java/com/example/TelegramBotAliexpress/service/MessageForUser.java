@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class MessageForUser {
+    private static final Integer MESSAGE_SIZE = 150;
     private TelegramBot bot;
     private long userId;
 
@@ -93,11 +94,42 @@ public class MessageForUser {
     }
 
     private void preparationAccsBefore(StringBuilder sb, List<Account> accountList) {
-        for (Account account : accountList)
-            if (account.getLastUse().isBefore(LocalDateTime.now().minusDays(1)))
-                sb.append(account.getLogin()).append(" ").append(account.isCentUse() ? "Да" : "Нет").append("\n");
-        simpleAnswer(sb.toString());
-        sb.delete(0, sb.length());
+        if (accountList.size() > MESSAGE_SIZE) {
+            int size = accountList.size() / 4;
+            for (int i = 0; i <= size; i++) {
+                Account account = accountList.get(i);
+                if (account.getLastUse().isBefore(LocalDateTime.now().minusDays(1)))
+                    sb.append(account.getLogin()).append(" ").append(account.isCentUse() ? "Да" : "Нет").append("\n");
+            }
+            simpleAnswer(sb.toString());
+            sb.delete(0, sb.length());
+            for (int i = size + 1; i <= size * 2; i++) {
+                Account account = accountList.get(i);
+                if (account.getLastUse().isBefore(LocalDateTime.now().minusDays(1)))
+                    sb.append(account.getLogin()).append(" ").append(account.isCentUse() ? "Да" : "Нет").append("\n");
+            }
+            simpleAnswer(sb.toString());
+            sb.delete(0, sb.length());
+            for (int i = size * 2 + 1; i <= size * 3; i++) {
+                Account account = accountList.get(i);
+                if (account.getLastUse().isBefore(LocalDateTime.now().minusDays(1)))
+                    sb.append(account.getLogin()).append(" ").append(account.isCentUse() ? "Да" : "Нет").append("\n");
+            }
+            for (int i = size * 3 + 1; i <= size * 4; i++) {
+                Account account = accountList.get(i);
+                if (account.getLastUse().isBefore(LocalDateTime.now().minusDays(1)))
+                    sb.append(account.getLogin()).append(" ").append(account.isCentUse() ? "Да" : "Нет").append("\n");
+            }
+            sb.append(accountList.size());
+            simpleAnswer(sb.toString());
+            sb.delete(0, sb.length());
+        } else {
+            for (Account account : accountList)
+                if (account.getLastUse().isBefore(LocalDateTime.now().minusDays(1)))
+                    sb.append(account.getLogin()).append(" ").append(account.isCentUse() ? "Да" : "Нет").append("\n");
+            simpleAnswer(sb.toString());
+            sb.delete(0, sb.length());
+        }
     }
 
     public void greeting() {

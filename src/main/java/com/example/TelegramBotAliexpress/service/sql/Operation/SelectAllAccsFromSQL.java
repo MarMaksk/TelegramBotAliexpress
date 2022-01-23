@@ -35,17 +35,30 @@ public class SelectAllAccsFromSQL {
         try (Connection con = Connecting.getConnection()) {
             PreparedStatement stmt = con.prepareStatement(sql);
             stmt.setLong(1, userId);
-            ResultSet resultSet = stmt.executeQuery();
-            StringBuilder res = new StringBuilder();
-            while (resultSet.next()) {
-                accountList.add(new Account(userId,
-                        resultSet.getString("account_login"),
-                        sql.equals(SELECT_ACCOUNT_NEW) ?
-                                LocalDateTime.now().minusWeeks(1)
-                                :
-                                resultSet.getTimestamp("last_use").toLocalDateTime(),
-                        !sql.equals(SELECT_ACCOUNT_NEW) && resultSet.getBoolean("cent_use")));
+            boolean hasResult = stmt.execute();
+            while (hasResult) {
+                ResultSet rs = stmt.getResultSet();
+                while (rs.next()) {
+                    accountList.add(new Account(userId,
+                            rs.getString("account_login"),
+                            sql.equals(SELECT_ACCOUNT_NEW) ?
+                                    LocalDateTime.now().minusWeeks(1)
+                                    :
+                                    rs.getTimestamp("last_use").toLocalDateTime(),
+                            !sql.equals(SELECT_ACCOUNT_NEW) && rs.getBoolean("cent_use")));
+                }
+                hasResult = stmt.getMoreResults();
             }
+//            ResultSet resultSet = stmt.executeQuery();
+//            while (resultSet.next()) {
+//                accountList.add(new Account(userId,
+//                        resultSet.getString("account_login"),
+//                        sql.equals(SELECT_ACCOUNT_NEW) ?
+//                                LocalDateTime.now().minusWeeks(1)
+//                                :
+//                                resultSet.getTimestamp("last_use").toLocalDateTime(),
+//                        sql.equals(SELECT_ACCOUNT_NEW) ? false : resultSet.getBoolean("cent_use")));
+//            }
             logger.info("Выданы все аккаунты");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
