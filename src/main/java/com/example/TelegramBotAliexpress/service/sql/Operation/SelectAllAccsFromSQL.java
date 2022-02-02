@@ -49,16 +49,6 @@ public class SelectAllAccsFromSQL {
                 }
                 hasResult = stmt.getMoreResults();
             }
-//            ResultSet resultSet = stmt.executeQuery();
-//            while (resultSet.next()) {
-//                accountList.add(new Account(userId,
-//                        resultSet.getString("account_login"),
-//                        sql.equals(SELECT_ACCOUNT_NEW) ?
-//                                LocalDateTime.now().minusWeeks(1)
-//                                :
-//                                resultSet.getTimestamp("last_use").toLocalDateTime(),
-//                        sql.equals(SELECT_ACCOUNT_NEW) ? false : resultSet.getBoolean("cent_use")));
-//            }
             logger.info("Выданы все аккаунты");
         } catch (SQLException throwables) {
             throwables.printStackTrace();
