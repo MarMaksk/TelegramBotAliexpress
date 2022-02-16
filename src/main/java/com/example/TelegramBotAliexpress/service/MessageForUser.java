@@ -37,10 +37,13 @@ public class MessageForUser {
                     .addRow("2$")
                     .resizeKeyboard(false).selective(true).oneTimeKeyboard(true);
             TelegramUser.setUserCurrentBotState(userId, BotState.SELECT_PRICE);
-            bot.execute(new SendMessage(userId, account.get(0).getLogin()));
-            bot.execute(new SendMessage(userId, account.get(1).getLogin()).replyMarkup(replyKeyboardMarkup));
+            bot.execute(new SendMessage(userId, account.get(0).getLogin()
+                    .replace(":", " ").replace(";", " ")));
+            bot.execute(new SendMessage(userId, account.get(1).getLogin()
+                    .replace(":", " ").replace(";", " ")).replyMarkup(replyKeyboardMarkup));
         } else if (one) {
-            bot.execute(new SendMessage(userId, account.get(0).getLogin()));
+            bot.execute(new SendMessage(userId, account.get(0).getLogin()
+                    .replace(":", " ").replace(";", " ")));
             TelegramUser.setMoneySpent(userId, 0.01);
             PriceOperation.priceInsert(userId, true);
         } else {
@@ -73,13 +76,15 @@ public class MessageForUser {
         accountListNew.forEach(acc -> sb.append(acc.getLogin()).append("\n"));
         simpleAnswer(sb.toString());
         sb.delete(0, sb.length());
-        simpleAnswer("Аккаунты без заказов использованные в течении последних 24 часов:");
+        simpleAnswer("Аккаунты без заказов использованные в течении последних 24 часов " + accountListNew.size());
         List<Account> accountsWithoutOrder = SelectAllAccsFromSQL.selectAccWithoutOrder(userId);
         preparationAccsAfter(sb, accountsWithoutOrder);
-        simpleAnswer("Аккаунты без заказов не использованные в течении последних 24 часов");
+        simpleAnswer("Аккаунтов без заказа: " + accountsWithoutOrder.size() +
+                ".Не использованные в течении последних 24 часов: ");
         preparationAccsBefore(sb, accountsWithoutOrder);
-        simpleAnswer("Аккаунты с заказом использованные в течении последних 24 часов:");
         List<Account> accountsWithOrder = SelectAllAccsFromSQL.selectAccWithOrder(userId);
+        simpleAnswer("Аккаунтов с заказами: " + accountsWithOrder.size() +
+                ".Не использованные в течении последних 24 часов: ");
         preparationAccsAfter(sb, accountsWithOrder);
         simpleAnswer("Аккаунты с заказом не использованные в течении последних 24 часов");
         preparationAccsBefore(sb, accountsWithOrder);
